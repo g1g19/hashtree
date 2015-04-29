@@ -26,7 +26,7 @@ tnode* hashtree(void);
 void hash(tnode** T,int* s,int count);
 void update_hashtree(tnode* T,int count);
 void generate_Freqitemset(tnode* T,float support,int count,FILE* fk,FILE* fb);
-
+FILE* data;
 int main(void)
 {
         char filename[25];
@@ -75,6 +75,7 @@ int main(void)
 		     k++;
  	        }
 	}
+	data = fopen("Freqsets","w");
 	generateitemsetC1();
 	int counter = 2;
 	item** F = F1;
@@ -87,26 +88,50 @@ int main(void)
 	FILE* fk = NULL;
 	FILE* fb = NULL;
 	int q[75];
+	FILE* ip;
+	FILE* op;
 	while(F != NULL)
 	{
+		
 		if(T != NULL)
 		   free(T);
 		T = NULL;
+		if(ctr == 8)
+			break;
+
 		generate_candidate_itemset(F,Fsize,ctr);
-		//if(ctr == 5)
-		//	break;
-		printf("Almost there\n");
+		printf("Candidate set generated\n");
 		T = hashtree();
-		printf("Almost there2\n");
+		printf("Hashtree generated\n");
 		update_hashtree(T,ctr+1);
-		printf("Almost there3\n");
 		fk = fopen("output","w");
 		fb = fopen("support","w");		
 		fprintf(fk,"%d\n",ctr+1);
-		printf("Almost there4\n");
-		generate_Freqitemset(T,0.9,ctr+1,fk,fb);	
-		printf("Almost there5\n");	
-		printf("T3 = %p\n",T);	
+		generate_Freqitemset(T,0.9,ctr+1,fk,fb);
+		ip = fopen("output","r");
+		op = fopen("support","r");
+
+		int uy,jh,hj;
+		hj = 0;	
+		fscanf(ip,"%d",&uy);
+		printf("uy = %d\n",uy);
+		if(uy == 0)
+			uy = 2;
+		while(fscanf(ip,"%d",&jh) != EOF)
+		{
+			fprintf(data,"%d ",jh);
+			for(hj=1;hj<uy;hj++)
+			{
+				fscanf(ip,"%d",&jh);
+				fprintf(data,"%d ",jh);
+			}
+			fscanf(op,"%d",&jh);
+			fprintf(data,"%d ",jh);
+			fprintf(data,"\n");
+		}	
+		fclose(ip);
+		fclose(op);
+		printf("Frequent set generated\n");		
 		fclose(fk);
 		fclose(fb);
 		if(F != F1)
@@ -172,7 +197,6 @@ void generateitemsetC1(void)
 		**(C1[i].id) = i;
 		C1[i].support = 0;
 	}
-
 	int k;
 	j=0;k=0;
 	i=1;	
@@ -195,18 +219,22 @@ void generateitemsetC1(void)
 			F1[j]->id = (int**)malloc(sizeof(int*));
 			*(F1[j])->id = (int*)malloc(sizeof(int));			
 			**(F1[j])->id = i;
+			fprintf(data,"%d ",i);
 			(*F1[j]).support = C1[i].support;
+			fprintf(data,"%ld \n",C1[i].support);
 			j++;
 		}
 	}
 	zx = j;
 	f1 = j;
+
 }
 
 
 
 item** generate_candidate_itemset(item** F,int Fsize,int ctr)
 {
+	printf("ctr = %d\n",ctr);
 	FILE* fl = fopen("output","w");
 	fprintf(fl,"%d\n",ctr+1);
 	int i,j,p,q;
@@ -223,7 +251,7 @@ item** generate_candidate_itemset(item** F,int Fsize,int ctr)
 			C[k] = (item*)malloc(sizeof(item));
 			C[k]->id = NULL;
 			C[k]->support = 0;
-			C[k]->id = (int**)malloc((ctr+1)*sizeof(int*));
+			C[k]->id = (int**)malloc((ctr+2)*sizeof(int*));
 			int c = 0;
 			for(c=0;c<=ctr;c++)
 			{			
